@@ -107,8 +107,6 @@ If disabled, place the file manually at the place from which you'll call the exe
 
 Or override `JSON_URL` and `JSON_LOCAL_PATH` directly in `CMakeLists.txt`.
 
-```
-
 ---
 
 ## 📚 What's Included
@@ -135,5 +133,3 @@ When run, the example outputs statistics like:
 ## ⚖ License
 
 MIT
-
-```
