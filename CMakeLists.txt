@@ -14,6 +14,23 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glaze)
 
+# libcpr
+FetchContent_Declare(
+    cpr 
+    GIT_REPOSITORY https://github.com/libcpr/cpr.git
+    GIT_TAG 1.11.0
+) 
+FetchContent_MakeAvailable(cpr)
+
+FetchContent_Declare(
+  liblzma
+  URL https://tukaani.org/xz/xz-5.4.5.tar.gz
+)
+
+include_directories(${xz_SOURCE_DIR}/src/liblzma/api/)
+
+FetchContent_MakeAvailable(liblzma)
+
 # ==== Allow FetchContenting us ====
 
 add_library(warframe_models INTERFACE)
@@ -62,6 +79,26 @@ if (BUILD_EXAMPLE)
     add_executable(example main.cpp)
     target_link_libraries(example PRIVATE warframe_models glaze::glaze)
 endif()
+
+add_executable(api_explorer api_explorer.cpp source/Warframe/API/ManifestIndex.cpp)
+
+function(copy_runtime_dll target lib_target)
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:${lib_target}>
+            $<TARGET_FILE_DIR:${target}>
+        COMMENT "Copying runtime DLL from ${lib_target} to ${target}"
+    )
+endfunction()
+
+copy_runtime_dll(api_explorer cpr::cpr)
+# copy_runtime_dll(api_explorer glaze::glaze)  # if it ever becomes shared
+copy_runtime_dll(api_explorer liblzma)       # if linked as a target
+# copy_runtime_dll(api_explorer zlib::zlib)    # if available
+copy_runtime_dll(api_explorer CURL::libcurl) # if found via find_package or fetchcontent
+
+target_link_libraries(api_explorer PRIVATE warframe_models glaze::glaze cpr::cpr liblzma)
+target_include_directories(api_explorer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # === Download and Copy all.json ===
 

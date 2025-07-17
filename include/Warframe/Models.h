@@ -1,16 +1,16 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "AvatarModel.h"
-#include "BlueprintModel.h"
-#include "HubRewardModel.h"
-#include "ModModel.h"
-#include "RelicModel.h"
-#include "RewardModel.h"
-#include "StarchartEventModel.h"
-#include "StarchartModel.h"
-#include "SyndicatesModel.h"
-#include "TransientModel.h"
+#include "Warframe/Models/AvatarModel.h"
+#include "Warframe/Models/BlueprintModel.h"
+#include "Warframe/Models/HubRewardModel.h"
+#include "Warframe/Models/ModModel.h"
+#include "Warframe/Models/RelicModel.h"
+#include "Warframe/Models/RewardModel.h"
+#include "Warframe/Models/StarchartEventModel.h"
+#include "Warframe/Models/StarchartModel.h"
+#include "Warframe/Models/SyndicatesModel.h"
+#include "Warframe/Models/TransientModel.h"
 
 // #include "RewardModel.h"
 

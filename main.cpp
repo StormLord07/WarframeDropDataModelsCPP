@@ -1,4 +1,4 @@
-#include "include/warframe_models/models.h"
+#include "Warframe/Models.h"
 #include <algorithm>
 #include <fstream>
 #include <glaze/glaze.hpp>
@@ -6,7 +6,6 @@
 #include <map>
 #include <set>
 #include <sstream>
-
 
 void print_stats(const DropTableData &data) {
   std::cout << "=== Drop Table Statistics ===\n";
