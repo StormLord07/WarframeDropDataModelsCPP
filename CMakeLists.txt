@@ -27,9 +27,9 @@ FetchContent_Declare(
   URL https://tukaani.org/xz/xz-5.4.5.tar.gz
 )
 
-include_directories(${xz_SOURCE_DIR}/src/liblzma/api/)
-
 FetchContent_MakeAvailable(liblzma)
+
+include_directories(${xz_SOURCE_DIR}/src/liblzma/api/)
 
 # ==== Allow FetchContenting us ====
 
@@ -77,10 +77,10 @@ option(BUILD_EXAMPLE "Build example executable" ON)
 
 if (BUILD_EXAMPLE)
     add_executable(example main.cpp)
-    target_link_libraries(example PRIVATE warframe_models glaze::glaze)
+    target_link_libraries(example PRIVATE warframe_models glaze::glaze )
 endif()
 
-add_executable(api_explorer api_explorer.cpp source/Warframe/API/ManifestIndex.cpp)
+add_executable(api_explorer api_explorer.cpp source/Warframe/API/ManifestIndex.cpp source/Warframe/API/Client.cpp)
 
 function(copy_runtime_dll target lib_target)
     add_custom_command(TARGET ${target} POST_BUILD
@@ -100,31 +100,3 @@ copy_runtime_dll(api_explorer CURL::libcurl) # if found via find_package or fetc
 target_link_libraries(api_explorer PRIVATE warframe_models glaze::glaze cpr::cpr liblzma)
 target_include_directories(api_explorer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# === Download and Copy all.json ===
-
-option(DOWNLOAD_WARFRAME_JSON "Download all.json automatically at configure time" ON)
-set(JSON_URL "https://raw.githubusercontent.com/WFCD/warframe-drop-data/gh-pages/data/all.json")
-set(JSON_LOCAL_PATH "${CMAKE_BINARY_DIR}/all.json")
-
-if(DOWNLOAD_WARFRAME_JSON)
-    file(DOWNLOAD
-        ${JSON_URL}
-        ${JSON_LOCAL_PATH}
-        STATUS download_status
-        SHOW_PROGRESS
-    )
-
-    list(GET download_status 0 status_code)
-    if (NOT status_code EQUAL 0)
-        message(FATAL_ERROR "Failed to download all.json from ${JSON_URL}")
-    endif()
-
-    # Copy to all 3 desired locations
-    file(COPY "${JSON_LOCAL_PATH}" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}")
-    file(COPY "${JSON_LOCAL_PATH}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-    # Already in CMAKE_BINARY_DIR, so optional
-
-    message(STATUS "all.json downloaded and copied to project directories.")
-else()
-    message(STATUS "Skipping download of all.json (DOWNLOAD_WARFRAME_JSON=OFF)")
-endif()

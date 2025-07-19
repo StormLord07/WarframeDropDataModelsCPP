@@ -1,18 +1,22 @@
 #ifndef WARFRAME_API_MANIFEST_INDEX_H
 #define WARFRAME_API_MANIFEST_INDEX_H
 
+#include "Utils/Error.h"
 #include "Utils/FixedKeyMap.h"
+#include "Utils/Utils.h"
 
 #include <cpr/cpr.h>
 #include <lzma.h>
 
+#include <expected>
 #include <filesystem>
+#include <iomanip>
+#include <iostream>
 #include <iterator>
-#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 // https://wiki.warframe.com/w/Public_Export#Generic_Entry_Schema
@@ -67,7 +71,8 @@ struct Data {
                   // Railjack Armaments (ExportRailjackWeapons)
   Info manifest;  // Full image manifest (same for all languages)
 
-  static Data parse(const std::vector<std::string> &data);
+  static std::expected<public_export::Data, std::string>
+  parse(const std::vector<std::string> &data);
 
   using FieldEntry = std::pair<std::string_view, Info Data::*>;
 
@@ -94,6 +99,18 @@ struct Data {
   // Iterators over the static table
   static constexpr auto begin() noexcept { return std::begin(field_table); }
   static constexpr auto end() noexcept { return std::end(field_table); }
+
+  explicit operator std::string() const {
+    std::string rv;
+    if (!this->filename.empty()) {
+      for (const auto &[_, value] : *this) {
+        rv += (this->*value).filename + "!" + (this->*value).hash + "\n";
+      }
+      rv.pop_back();
+      return rv;
+    }
+    return {};
+  }
 };
 
 } // namespace public_export
@@ -107,10 +124,27 @@ public:
   ManifestIndex(const ManifestIndex &) = default;
   ManifestIndex(ManifestIndex &&) = default;
 
+  std::expected<public_export::Data, ExpectedErrorType>
+  get(std::string language);
+  std::expected<void, ExpectedErrorType> get();
+  std::expected<void, ExpectedErrorType> getProgressBar();
+
+  std::expected<void, ExpectedErrorType>
+  save(std::string_view data, const std::filesystem::path &path);
+  std::expected<void, ExpectedErrorType> save();
+
+  std::expected<void, ExpectedErrorType> load();
+  std::expected<public_export::Data, ExpectedErrorType>
+  load(const std::filesystem::path &path);
+
+  std::expected<void, ExpectedErrorType>
+  tryLoad(); // Try to load the index, if it fails, try to download it
+
   FixedKeyUMap<std::string, public_export::Data> language_index;
 
 private:
   std::vector<std::string> lzma24_decompress(const std::string_view data);
+  static const std::string base_url_;
 
   cpr::Session session_;
 };
